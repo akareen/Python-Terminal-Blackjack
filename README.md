@@ -6,7 +6,7 @@ For my second independent project I have chosen to make a terminal game of Black
 
 ##### Project Description
 
-![Screen Shot 2021-04-17 at 10.37.01 pm](/Users/akkareen/Desktop/Screen Shot 2021-04-17 at 10.37.01 pm.png)
+<img width="471" alt="Screen Shot 2021-04-17 at 10 37 01 pm" src="https://user-images.githubusercontent.com/66585639/115113562-54387e80-9fce-11eb-9aa0-8fd8b11c0fde.png">
 
 The terminal Blackjack starts by introducing itself to the player and asking the player how much money they will be bringing to the table.
 
