@@ -49,6 +49,7 @@ final_balance = 0
 bet_amount_per_round = 0
 
 #Variables for the round
+aces = ['Ace of Spades', 'Ace of Hearts', 'Ace of Clubs', 'Ace of Diamonds']
 player_on_table = True
 round_finised = False
 bet_value = 0
@@ -162,25 +163,26 @@ def dealers_hidden_card():
 
 
 def ace_checker():
-    global p_card_value, d_card_value
-    aces = ['Ace of Spades', 'Ace of Hearts', 'Ace of Clubs', 'Ace of Diamonds']
+    global p_card_value, d_card_value, aces
     
     p_ace_count = 0 
     for i in range(len(card_list[0])):
         for card in aces:
             if card in card_list[0]:
+                aces.remove(card)
                 p_ace_count += 1
 
     d_ace_count = 0
     for i in range(len(card_list[1])):
         for card in aces:
             if card in card_list[1]:
+                aces.remove(card)
                 d_ace_count += 1
 
     for i in range(p_ace_count):
         while True:
             ace_choice_p = input(
-            "Would you like the Ace to be treated as a 1 or 11: "))
+            "Would you like the Ace to be treated as a 1 or 11: ")
             if ace_choice_p == '1':
                 p_card_value += 1
                 break
@@ -200,7 +202,8 @@ def ace_checker():
 def extra_bet():
     global bet_value, final_balance
     print("The time has come to make another bet")
-    while True:
+    extra_bet_made = False
+    while extra_bet_made == False:
         bet_choice = input(
         "\nWould you like to make another bet: 'y' for Yes, 'n' for No: ")
         if bet_choice.lower() == 'y':
@@ -211,6 +214,7 @@ def extra_bet():
                     if extra_bet >= bet_amount_per_round:
                         final_balance -= extra_bet
                         bet_value += extra_bet
+                        extra_bet_made = True
                         break
                     else:
                         print(
@@ -223,32 +227,60 @@ def extra_bet():
             print("The correct inputs are 'y' or 'n', please try again")
 
 
-def checker_of_21():
+def win_message():
     global final_balance, round_finised
-    if d_card_value != 21:
+    print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
+    print("🎉 Congratulations you won ${} this round".format(bet_value * 2))
+    final_balance += (bet_value * 2)
+    round_finised = True
+
+def loss_message():
+    global final_balance, round_finised
+    print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
+    print(f"😭 You lost ${bet_value} this round")
+    round_finised = True
+
+def draw_message():
+    global final_balance, round_finised
+    print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
+    print(f"🎭 It's a draw, your bets of ${bet_value} have been returned")
+    final_balance += bet_value
+    round_finised = True
+
+
+def checker_of_21():
+    if p_card_value == d_card_value:
+        draw_message()
+    elif p_card_value == 21:
+        if d_card_value == 21:
+            draw_message()
+        else:
+            win_message()
+    elif d_card_value == 21:
         if p_card_value == 21:
-            print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-            print(
-            "🎉 Congratulations you won ${} this round".format(bet_value * 2))
-            final_balance += (bet_value * 2)
-            round_finised = True
-        elif p_card_value > 21:
-            if d_card_value < 21:
-                print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-                print(f"😭 You lost ${bet_value} this round")
-                round_finised = True
-            elif d_card_value > 21:
-                print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-                print(
-                f"🎭 It's a draw, your bets of ${bet_value} have been returned")
-                final_balance += bet_value
-                round_finised = True
-    else:
-        if p_card_value == 21:
-            print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-            print(f"🎭 It's a draw, your bets of ${bet_value} have been returned")
-            final_balance += bet_value
-            round_finised = True
+            draw_message()
+        else:
+            loss_message()
+    elif p_card_value > 21:
+        if p_card_value > d_card_value:
+            loss_message()
+        elif p_card_value < d_card_value:
+            win_message()
+    elif d_card_value > 21:
+        if d_card_value > p_card_value:
+            win_message()
+        if d_card_value < p_card_value:
+            loss_message()
+
+
+def evaluation_extra_card():
+    if round_finised != True:
+        if p_card_value < d_card_value:
+            loss_message()
+        elif p_card_value > d_card_value:
+            win_message()
+        elif p_card_value == d_card_value:
+            draw_message()
 
 
 def extra_card_evaluation():
@@ -265,34 +297,29 @@ def extra_card_evaluation():
                 p_card_value += deck_values[extra_card_p]
                 card_list[0].append(extra_card_p)
                 print(f"\nCard #{cards_dealt} for the player" 
-                +" is: {}".format(card_list[0][2]))
+                +" is: {}".format(card_list[0][cards_dealt - 1]))
                 if d_card_value < 18:
                     extra_card_d = round_deck.pop(random.randint(0, len(round_deck) - 1))
                     d_card_value += deck_values[extra_card_d]
                     card_list[1].append(extra_card_d)
                     print(f"Card #{cards_dealt} for the dealer"
-                    +" is: {}\n".format(card_list[1][2]))
+                    +" is: {}\n".format(card_list[1][cards_dealt - 1]))
                 elif d_card_value >= 18:
-                    print("The dealer has chosen not to take an extra card")
+                    print("The dealer has chosen not to take an extra card\n")
+
+                checker_of_21()
+
                 break
+
             elif extra_card_choice.lower() == 'n':
-                if p_card_value < d_card_value:
-                    print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-                    print(f"😭 You lost ${bet_value} this round")
-                    round_finised = True
-                    break
-                elif p_card_value > d_card_value:
-                    print(f"\nThe dealers hidden card was {dealers_hidden_card()}")
-                    print(
-                    f"🎉 Congratulations you won ${bet_value * 2} this round")
-                    final_balance += (bet_value * 2)
-                    round_finised = True
-                    break
+                checker_of_21()
+                evaluation_extra_card()
+                break
 
 
 def table_refresh():
     global bet_value, round_deck, card_list, p_card_value
-    global d_card_value, cards_dealt, round_finised
+    global d_card_value, cards_dealt, round_finised, aces
     round_finised = False
     bet_value = 0
     round_deck = []
@@ -300,6 +327,7 @@ def table_refresh():
     p_card_value = 0
     d_card_value = 0
     cards_dealt = 0
+    aces = ['Ace of Spades', 'Ace of Hearts', 'Ace of Clubs', 'Ace of Diamonds']
 
 
 def player_leave_table():
@@ -373,13 +401,13 @@ def program_instructions():
         extra_bet()
         checker_of_21()
         while round_finised == False:
-            ace_checker()
             extra_card_evaluation()
+            ace_checker()
             if round_finised == False:
                 extra_bet()
                 checker_of_21()
         table_refresh()
-        player_leave_table()  
+        player_leave_table() 
     program_ending_draw()
     program_ending_win()
     program_ending_loss()
